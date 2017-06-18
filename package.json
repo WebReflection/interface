@@ -1,0 +1,20 @@
+{
+  "name": "@webreflection/interface",
+  "version": "0.0.0",
+  "description": "Simple interfaces for modern JavaScript.",
+  "main": "interface.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebReflection/interface.git"
+  },
+  "keywords": [
+    "interfaces"
+  ],
+  "author": "Andrea Giammarchi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WebReflection/interface/issues"
+  },
+  "homepage": "https://github.com/WebReflection/interface#readme"
+}
