@@ -9,7 +9,9 @@
     "url": "git+https://github.com/WebReflection/interface.git"
   },
   "keywords": [
-    "interfaces"
+    "interfaces",
+    "interface",
+    "implement"
   ],
   "author": "Andrea Giammarchi",
   "license": "ISC",

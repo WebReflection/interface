@@ -1,88 +1,89 @@
 /*! Copyright (c) 2017, Andrea Giammarchi, @WebReflection */
-var Interface = (function (O) {'use strict';
+(function (F, O, R) {'use strict';
+
+  if ('implements' in F) return;
 
   var
     dPs = O.defineProperties,
     gOPDs = O.getOwnPropertyDescriptors,
-    ownKeys = Reflect.ownKeys
+    ownKeys = R.ownKeys
   ;
 
   function Interface() {}
   Interface.prototype = O.create(null);
 
-  function getTarget(any) {
-    return typeof any === 'function' ? any.prototype : any;
-  }
-
-  function inspectInterface() {
-    for (var
-      target = {},
-      descriptors = {},
-      i = 0, length = arguments.length; i < length; i++
-    ) {
-      dPs(target, gOPDs(arguments[i]));
+  function augmentFunction(target, implementable) {
+    var descriptors = gOPDs(implementable);
+    if (typeof implementable === 'function') {
+      delete descriptors.prototype;
+      dPs(target, descriptors);
+      dPs(target.prototype, gOPDs(implementable.prototype));
+    } else {
+      augmentObject(target.prototype, implementable, descriptors);
     }
-    descriptors = gOPDs(target);
-    return {
-      implementedVia: function (any) {
-        for (var
-          key,
-          itIs = true,
-          sameValue = function (key) {
-            return this[key] === descriptor[key];
-          },
-          source = gOPDs(getTarget(any)),
-          keys = ownKeys(descriptors),
-          i = 0, length = keys.length;
-          itIs && i < length; i++
-        ) {
-          key = keys[i];
-          descriptor = descriptors[key];
-          itIs = ownKeys(descriptor).every(sameValue, source[key]);
-        }
-        return itIs;
-      },
-      via: function (any) {
-        dPs(getTarget(any), descriptors);
-        return any;
-      }
-    };
   }
 
-  return (function (Super) {
-    function Interface() {
-      return (
-        arguments[arguments.length - 1] instanceof Super ?
-          inspectInterface :
-          Interface.create
-      ).apply(null, arguments);
-    };
-    Interface.prototype = Super.prototype;
-    Interface.create = function create() {
+  function augmentObject(target, implementable) {
+    if (implementable instanceof Interface) {
+      dPs(target, gOPDs(implementable));
+    } else {
       for (var
-        descriptors, implemented,
-        iFace = new Super,
-        i = 0, length = arguments.length; i < length; i++
+        descriptors = gOPDs(implementable),
+        keys = ownKeys(descriptors),
+        i = 0, length = keys.length; i < length; i++
       ) {
-        implemented = arguments[i];
-        descriptors = gOPDs(implemented);
-        if (implemented instanceof Super) {
-          dPs(iFace, descriptors);
-        } else {
-          for (var
-            keys = Reflect.ownKeys(descriptors),
-            j = 0, len = keys.length; j < len; j++
-          ) {
-            descriptors[keys[j]].enumerable = false;
-          }
-          dPs(iFace, descriptors);
-        }
+        descriptors[keys[i]].enumerable = false;
       }
-      return iFace;
-    };
-    return Interface;
-  }(Interface));
+      dPs(target, descriptors);
+    }
+  }
 
-}(Object));
+  function classInterface() {
+    for (var
+      iFace = class Interface {},
+      i = 0, length = arguments.length; i < length;
+      augmentFunction(iFace, arguments[i++])
+    );
+    return iFace;
+  }
 
-try { module.exports = Interface; } catch(o_O) {}
+  function objectInterface() {
+    for (var
+      iFace = new Interface,
+      i = 0, length = arguments.length; i < length;
+      augmentObject(iFace, arguments[i++])
+    );
+    return iFace;
+  }
+
+  O.defineProperty(
+    F, 'implements',
+    {
+      configurable: true,
+        value: function () {
+          for (var
+            isObject = this === O,
+            target = isObject ? {} : class extends this {},
+            descriptors = isObject ? target : target.prototype,
+            i = 0, l = arguments.length; i < l; i++
+          ) {
+            dPs(descriptors, gOPDs(arguments[i]));
+          }
+          return target;
+      }
+    }
+  );
+
+  O.defineProperty(
+    F, 'interface',
+    {
+      configurable: true,
+      value: function () {
+        return typeof arguments[arguments.length - 1] === 'function' ?
+          classInterface.apply(this, arguments) :
+          objectInterface.apply(this, arguments);
+      }
+    }
+  );
+
+}(Function.prototype, Object, Reflect));
