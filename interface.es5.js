@@ -9,6 +9,18 @@
     ownKeys = R.ownKeys
   ;
 
+// ES5 patch
+function Class(Super) {
+  function Interface() {
+    return O.setPrototypeOf(
+      Super.apply(this, arguments) || this,
+      Interface.prototype
+    );
+  }
+  O.setPrototypeOf(Interface.prototype, Super.prototype);
+  return O.setPrototypeOf(Interface, Super);
+}
+
   function Interface() {}
   Interface.prototype = O.create(null);
 
@@ -40,7 +52,7 @@
 
   function classInterface() {
     for (var
-      iFace = class extends Interface {},
+      iFace = Class(Interface),
       i = 0, length = arguments.length; i < length;
       augmentFunction(iFace, arguments[i++])
     );
@@ -63,7 +75,7 @@
         value: function () {
           for (var
             isObject = this === O,
-            target = isObject ? {} : class extends this {},
+            target = isObject ? {} : Class(this),
             descriptors = isObject ? target : target.prototype,
             i = 0, l = arguments.length; i < l; i++
           ) {
