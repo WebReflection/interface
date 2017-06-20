@@ -50,24 +50,6 @@ function Class(Super) {
     }
   }
 
-  function classInterface() {
-    for (var
-      iFace = Class(Interface),
-      i = 0, length = arguments.length; i < length;
-      augmentFunction(iFace, arguments[i++])
-    );
-    return iFace;
-  }
-
-  function objectInterface() {
-    for (var
-      iFace = new Interface,
-      i = 0, length = arguments.length; i < length;
-      augmentObject(iFace, arguments[i++])
-    );
-    return iFace;
-  }
-
   O.defineProperty(
     F, 'implements',
     {
@@ -91,9 +73,15 @@ function Class(Super) {
     {
       configurable: true,
       value: function () {
-        return typeof arguments[arguments.length - 1] === 'function' ?
-          classInterface.apply(this, arguments) :
-          objectInterface.apply(this, arguments);
+        for (var
+          isClass = typeof arguments[arguments.length - 1] === 'function',
+          iFace = isClass ? Class(Interface) : new Interface,
+          augment = isClass ? augmentFunction : augmentObject,
+          i = 0, length = arguments.length; i < length; i++
+        ) {
+          augment(iFace, arguments[i]);
+        }
+        return iFace;
       }
     }
   );
